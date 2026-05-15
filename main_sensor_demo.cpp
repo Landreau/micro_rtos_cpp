@@ -1,5 +1,5 @@
-#include "Kernel/rtos.h"
-#include "Kernel/sensor_simulator.h"
+#include "./kernel/rtos.h"
+#include "./kernel/sensor_simulator.h"
 #include <iostream>
 #include <iomanip>
 #include <ctime>

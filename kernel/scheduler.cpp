@@ -72,10 +72,10 @@ void Scheduler::updatePeriodicTasks()
     {
         if (task->isPeriodic() && task->getState() == TaskState::READY)
         {
-            // Vérification, si c'est l'heure de réexécuter la tâche périodique
+            // Vérifier si c'est l'heure de réexécuter la tâche périodique
             if (now >= task->getNextWakeup())
             {
-                // Remettre dans la queue si elle n'y est pas déjà
+                // Remettre dans la queue pour exécution
                 readyQueue.push(task);
             }
         }
@@ -84,16 +84,20 @@ void Scheduler::updatePeriodicTasks()
 
 void Scheduler::runOnce()
 {
-    // Mettre à jour les tâches en délai et périodiques
     updateDelayedTasks();
-    updatePeriodicTasks();
 
     auto task = getNextTask();
 
     if (!task)
     {
-        std::cout << "[SCHEDULER] Aucune tâche à exécuter" << std::endl;
-        return;
+        updatePeriodicTasks();
+
+        task = getNextTask();
+
+        if (!task)
+        {
+            return;
+        }
     }
 
     currentTask = task;
@@ -102,20 +106,15 @@ void Scheduler::runOnce()
     task->execute();
 
     // Gestion de l'état après exécution
-    if (task->getState() != TaskState::TERMINATED)
+    if (task->isPeriodic())
     {
-        if (task->isPeriodic())
-        {
-            // Tâche périodique : remettre en queue
-            task->setState(TaskState::READY);
-            readyQueue.push(task);
-        }
-        else
-        {
-            // Tâche normale : remettre en queue
-            task->setState(TaskState::READY);
-            readyQueue.push(task);
-        }
+
+        task->updateNextWakeup();
+        task->setState(TaskState::READY);
+    }
+    else
+    {
+        task->setState(TaskState::TERMINATED);
     }
 
     currentTask = nullptr;
@@ -123,7 +122,22 @@ void Scheduler::runOnce()
 
 bool Scheduler::hasReadyTasks() const
 {
-    return !readyQueue.empty() || !delayedTasks.empty();
+
+    if (!readyQueue.empty() || !delayedTasks.empty())
+    {
+        return true;
+    }
+
+    auto now = std::chrono::steady_clock::now();
+    for (const auto &task : allTasks)
+    {
+        if (task->isPeriodic() && task->getState() == TaskState::READY)
+        {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void Scheduler::printStatus() const

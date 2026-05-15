@@ -42,6 +42,9 @@ public:
     // Obtenir le nombre de tâches
     int getTaskCount() const { return taskCount; }
 
+    // Vérifier si le kernel est en cours d'exécution
+    bool isRunning() const { return running; }
+
     // Afficher l'état du kernel
     void printStatus() const;
 

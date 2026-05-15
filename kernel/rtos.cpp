@@ -1,6 +1,6 @@
-#include "rtos.h"
 #include <iostream>
 #include <thread>
+#include "rtos.h"
 
 Kernel::Kernel() : taskIdCounter(0), taskCount(0), running(false), globalSemaphore(1)
 {
@@ -50,12 +50,13 @@ void Kernel::run(int maxIterations)
 {
     if (running)
     {
-        std::cout << "[KERNEL] Le kernel est déjà en cours d'exécution" << std::endl;
+        std::cout << "[KERNEL] ⚠️  Le kernel est déjà en cours d'exécution" << std::endl;
         return;
     }
 
     running = true;
-    std::cout << "[KERNEL] Démarrage du scheduler..." << std::endl;
+    std::cout << "[KERNEL] ▶️  Démarrage du scheduler..." << std::endl;
+    std::cout << "[KERNEL] ✓ Kernel EN COURS D'EXÉCUTION" << std::endl;
 
     int iterations = 0;
 
@@ -72,7 +73,9 @@ void Kernel::run(int maxIterations)
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 
-    std::cout << "[KERNEL] Scheduler arrêté après " << iterations << " itérations" << std::endl;
+    running = false;
+    std::cout << "[KERNEL] ⏹️  Scheduler arrêté après " << iterations << " itérations" << std::endl;
+    std::cout << "[KERNEL] ✗ Kernel ARRÊTÉ" << std::endl;
     running = false;
 }
 
@@ -84,10 +87,12 @@ void Kernel::stop()
 
 void Kernel::printStatus() const
 {
-    std::cout << "\n========== État du KERNEL ==========" << std::endl;
-    std::cout << "Statut: " << (running ? "EN COURS" : "ARRÊTÉ") << std::endl;
-    std::cout << "Nombre de tâches: " << taskCount << std::endl;
-    scheduler.printStatus();
-    std::cout << "===================================\n"
+    std::cout << "\n╔════════════════════════════════════════╗" << std::endl;
+    std::cout << "║       État du KERNEL                   ║" << std::endl;
+    std::cout << "╠════════════════════════════════════════╣" << std::endl;
+    std::cout << "║ Statut: " << (running ? "✓ EN COURS D'EXÉCUTION   " : "✗ ARRÊTÉ                ") << "       ║" << std::endl;
+    std::cout << "║ Nombre de tâches: " << (taskCount < 10 ? " " : "") << taskCount << "                   ║" << std::endl;
+    std::cout << "╚════════════════════════════════════════╝\n"
               << std::endl;
+    scheduler.printStatus();
 }

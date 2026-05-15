@@ -106,4 +106,4 @@ private:
     Semaphore notEmpty{0}; // Initialisé à 0
 };
 
-#endif // MESSAGE_QUEUE_H
+#endif
