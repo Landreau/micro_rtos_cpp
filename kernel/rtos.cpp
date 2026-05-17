@@ -1,10 +1,31 @@
 #include <iostream>
 #include <thread>
+#include <string>
 #include "rtos.h"
 
-Kernel::Kernel() : taskIdCounter(0), taskCount(0), running(false), globalSemaphore(1)
+Kernel::Kernel() : taskIdCounter(0), taskCount(0), expectedTasks(0), running(false), globalSemaphore(1)
 {
     std::cout << "[KERNEL] Initialisation du Kernel RTOS" << std::endl;
+}
+
+void Kernel::printProgress(const std::string &label) const
+{
+    if (expectedTasks <= 0)
+        return;
+
+    const int barWidth = 20;
+    float ratio = static_cast<float>(taskCount) / static_cast<float>(expectedTasks);
+    int filled = static_cast<int>(ratio * barWidth);
+
+    std::string bar;
+    for (int i = 0; i < barWidth; ++i)
+        bar += (i < filled) ? "\u2588" : "\u2591";
+
+    std::cout << "[KERNEL] Enregistrement  ["
+              << bar << "]  "
+              << taskCount << "/" << expectedTasks
+              << "  " << label
+              << std::endl;
 }
 
 int Kernel::createTask(Task::TaskFunc func, uint32_t priority)
@@ -16,8 +37,7 @@ int Kernel::createTask(Task::TaskFunc func, uint32_t priority)
     scheduler.addTask(task);
     taskCount++;
 
-    std::cout << "[KERNEL] Tâche créée avec ID: " << taskId
-              << " (priorité: " << priority << ")" << std::endl;
+    printProgress("tache " + std::to_string(taskId) + " (priorite " + std::to_string(priority) + ")");
 
     return taskId;
 }
@@ -27,7 +47,6 @@ int Kernel::createPeriodicTask(Task::TaskFunc func, uint32_t priority, uint32_t 
     int taskId = taskIdCounter++;
     auto task = std::make_shared<Task>(taskId, func, priority);
 
-    // Configurer la période
     task->setPeriod(periodMs);
     task->updateNextWakeup();
 
@@ -35,8 +54,7 @@ int Kernel::createPeriodicTask(Task::TaskFunc func, uint32_t priority, uint32_t 
     scheduler.addTask(task);
     taskCount++;
 
-    std::cout << "[KERNEL] Tâche périodique créée avec ID: " << taskId
-              << " (priorité: " << priority << ", période: " << periodMs << " ms)" << std::endl;
+    printProgress("tache " + std::to_string(taskId) + " (priorite " + std::to_string(priority) + ", periode " + std::to_string(periodMs) + " ms)");
 
     return taskId;
 }
@@ -50,22 +68,26 @@ void Kernel::run(int maxIterations)
 {
     if (running)
     {
-        std::cout << "[KERNEL] ! Le kernel est déjà en cours d'exécution" << std::endl;
+        std::cout << "[KERNEL] Le kernel est deja en cours d'execution" << std::endl;
         return;
     }
 
+    // Ligne de séparation finale si une barre de progression était active
+    if (expectedTasks > 0)
+    {
+        std::cout << "[KERNEL] " << taskCount << " tache(s) enregistree(s) - demarrage..." << std::endl;
+    }
+
     running = true;
-    std::cout << "[KERNEL] >  Démarrage du scheduler..." << std::endl;
-    std::cout << "[KERNEL] v Kernel EN COURS D'EXÉCUTION" << std::endl;
+    std::cout << "[KERNEL] Demarrage du scheduler..." << std::endl;
+    std::cout << "[KERNEL] Kernel EN COURS D'EXECUTION" << std::endl;
 
     int iterations = 0;
 
     while (running && scheduler.hasReadyTasks())
     {
         if (maxIterations > 0 && iterations >= maxIterations)
-        {
             break;
-        }
 
         scheduler.runOnce();
         iterations++;
@@ -74,24 +96,24 @@ void Kernel::run(int maxIterations)
     }
 
     running = false;
-    std::cout << "[KERNEL] x  Scheduler arrêté après " << iterations << " itérations" << std::endl;
-    std::cout << "[KERNEL] x Kernel ARRÊTÉ" << std::endl;
+    std::cout << "[KERNEL] Scheduler arrete apres " << iterations << " iterations" << std::endl;
+    std::cout << "[KERNEL] Kernel ARRETE" << std::endl;
 }
 
 void Kernel::stop()
 {
     running = false;
-    std::cout << "[KERNEL] Arrêt du kernel demandé" << std::endl;
+    std::cout << "[KERNEL] Arret du kernel demande" << std::endl;
 }
 
 void Kernel::printStatus() const
 {
-    std::cout << "\n╔════════════════════════════════════════╗" << std::endl;
-    std::cout << "║       État du KERNEL                   ║" << std::endl;
-    std::cout << "╠════════════════════════════════════════╣" << std::endl;
-    std::cout << "║ Statut: " << (running ? "✓ EN COURS D'EXÉCUTION   " : "✗ ARRÊTÉ                ") << "       ║" << std::endl;
-    std::cout << "║ Nombre de tâches: " << (taskCount < 10 ? " " : "") << taskCount << "                   ║" << std::endl;
-    std::cout << "╚════════════════════════════════════════╝\n"
+    std::cout << "\n====================================" << std::endl;
+    std::cout << "  Etat du KERNEL" << std::endl;
+    std::cout << "====================================" << std::endl;
+    std::cout << "  Statut : " << (running ? "EN COURS" : "ARRETE") << std::endl;
+    std::cout << "  Taches : " << taskCount << std::endl;
+    std::cout << "====================================\n"
               << std::endl;
     scheduler.printStatus();
 }

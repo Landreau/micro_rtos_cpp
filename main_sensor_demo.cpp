@@ -69,7 +69,7 @@ void light_sensor_task()
 
     Message msg;
     msg.senderId = 3;      // Capteur lumière
-    msg.recipientId = -1;  // Broadcast
+    msg.recipientId = -1;  // Diffusion
     msg.messageType = 102; // Type: luminosité
     msg.dataSize = sizeof(SensorData);
     std::memcpy(msg.data, &data, sizeof(SensorData));
@@ -88,7 +88,7 @@ void motion_sensor_task()
     SensorData data = motionSensor.read(sensorReadCount++);
 
     if (data.value > 0)
-    {
+    { // Seulement si mouvement détecté
         Message msg;
         msg.senderId = 4;      // Capteur mouvement
         msg.recipientId = -1;  // Diffusion
@@ -149,21 +149,21 @@ void controller_task()
         // Déclencher une alerte si température trop haute
         if (data->type == SensorType::TEMPERATURE && data->value > 25.0f)
         {
-            std::cout << "    [CONTRÔLEUR] 🌡️  ALERTE TEMPÉRATURE: " << std::fixed
+            std::cout << "    [CONTRÔLEUR] !  ALERTE TEMPÉRATURE: " << std::fixed
                       << std::setprecision(2) << data->value << "°C" << std::endl;
         }
 
         // Alerte si humidité trop basse
         if (data->type == SensorType::HUMIDITY && data->value < 30.0f)
         {
-            std::cout << "    [CONTRÔLEUR] 💧 ALERTE HUMIDITÉ: " << std::fixed
+            std::cout << "    [CONTRÔLEUR] ! ALERTE HUMIDITÉ: " << std::fixed
                       << std::setprecision(2) << data->value << "%" << std::endl;
         }
 
         // Mouvement détecté
         if (data->type == SensorType::MOTION && data->value > 0)
         {
-            std::cout << "    [CONTRÔLEUR] 📹 Mouvement détecté - Activating alarm!" << std::endl;
+            std::cout << "    [CONTRÔLEUR] ! Mouvement détecté - Activating alarm!" << std::endl;
         }
     }
 }
@@ -211,7 +211,10 @@ int main()
               << std::endl;
 
     // Créer les tâches PRODUCTEURS (capteurs)
-    std::cout << "[KERNEL] Création des capteurs...\n"
+    // 4 capteurs + 3 consommateurs = 7 taches au total
+    kernel.setExpectedTasks(7);
+
+    std::cout << "[KERNEL] Creation des capteurs...\n"
               << std::endl;
     kernel.createPeriodicTask(temperature_sensor_task, 3, 100);
     kernel.createPeriodicTask(humidity_sensor_task, 3, 150);
@@ -219,16 +222,12 @@ int main()
     kernel.createPeriodicTask(motion_sensor_task, 3, 50);
 
     // Créer les tâches CONSOMMATEURS
-    std::cout << "[KERNEL] Création des consommateurs...\n"
-              << std::endl;
+    std::cout << "[KERNEL] Creation des consommateurs..." << std::endl;
     kernel.createPeriodicTask(logger_task, 2, 100);
     kernel.createPeriodicTask(controller_task, 2, 100);
     kernel.createPeriodicTask(stats_task, 1, 500);
 
-    std::cout << "[KERNEL] Démarrage du système...\n"
-              << std::endl;
-    std::cout << "════════════════════════════════════════════\n"
-              << std::endl;
+    std::cout << "[KERNEL] Demarrage du systeme..." << std::endl;
 
     // Lancement le kernel
     kernel.run(200);

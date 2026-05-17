@@ -8,6 +8,7 @@
 #include <memory>
 #include <map>
 #include <chrono>
+#include <string>
 
 class Kernel
 {
@@ -39,6 +40,9 @@ public:
     // Arrêter le kernel
     void stop();
 
+    // Définir le nombre de tâches attendues (active la barre de progression)
+    void setExpectedTasks(int n) { expectedTasks = n; }
+
     // Obtenir le nombre de tâches
     int getTaskCount() const { return taskCount; }
 
@@ -49,9 +53,13 @@ public:
     void printStatus() const;
 
 private:
+    // Affiche une ligne de progression lors de l'enregistrement des tâches
+    void printProgress(const std::string &label) const;
+
     Scheduler scheduler;
     int taskIdCounter = 0;
     int taskCount = 0;
+    int expectedTasks = 0; // 0 = pas de barre de progression
     bool running = false;
     std::map<int, std::shared_ptr<Task>> tasks;
 

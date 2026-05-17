@@ -36,7 +36,7 @@ void periodic_task()
 void delayed_task()
 {
     std::cout << "  [DELAYED] Avant délai" << std::endl;
-    Kernel::delay(100); // Attendre 100 ms
+    Kernel::delay(100);
     std::cout << "  [DELAYED] Après délai" << std::endl;
 }
 
@@ -106,7 +106,6 @@ void consumer_task()
     }
 }
 
-// ============ MAIN ============
 int main()
 {
     std::cout << "\n╔══════════════════════════════════════════╗" << std::endl;
@@ -123,9 +122,10 @@ int main()
     std::cout << "═════════════════════════════════════════\n"
               << std::endl;
 
-    kernel.createTask(task1_simple, 1); // Priorité basse
-    kernel.createTask(task2_simple, 3); // Priorité haute
-    kernel.createTask(task3_simple, 2); // Priorité moyenne
+    kernel.setExpectedTasks(3);
+    kernel.createTask(task1_simple, 1);
+    kernel.createTask(task2_simple, 3);
+    kernel.createTask(task3_simple, 2);
 
     kernel.run(10);
 
