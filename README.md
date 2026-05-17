@@ -1,6 +1,8 @@
-# 🧵 Micro‑RTOS – Mini Système d’Exploitation Temps Réel en C++20
+# 🧵 Micro‑RTOS – Mini Real-Time Operating System in C++20
 
-Un micro‑RTOS complet écrit en **C++20**, conçu pour explorer et comprendre les concepts fondamentaux des systèmes embarqués : tâches, scheduling, synchronisation, communication inter‑tâches et simulation de capteurs IoT.
+A complete micro-RTOS written in C++20, designed to explore and understand the fundamental concepts of embedded systems: tasks, scheduling, synchronization, inter-task communication, and IoT sensor simulation.
 
-Ce projet implémente un noyau RTOS minimaliste mais réaliste, capable d’exécuter plusieurs tâches concurrentes (simples ou périodiques), avec gestion des priorités, délais, sémaphores, mutex et message queue.  
-Il inclut également un **simulateur de capteurs** (température, humidité, luminosité, mouvement) permettant de tester un pipeline IoT complet sans matériel.
+This project implements a minimalist yet realistic RTOS kernel capable of executing multiple concurrent tasks (simple or periodic), with support for priorities, timeouts, semaphores, mutexes, and message queues.
+It also includes a sensor simulator (temperature, humidity, light, motion) that allows for testing a complete IoT pipeline without hardware.
+
+Translated with DeepL.com (free version)
