@@ -23,7 +23,7 @@ struct Message
     }
 };
 
-// ============ MESSAGE QUEUE ============
+// MESSAGE QUEUE
 class MessageQueue
 {
 public:
@@ -45,10 +45,12 @@ public:
         return true;
     }
 
-    // Recevoir un message (bloquant)
     bool receive(Message &msg)
     {
-        notEmpty.wait();
+        if (!notEmpty.tryWait())
+        {
+            return false;
+        }
 
         LockGuard lock(queueMutex);
 
@@ -74,18 +76,21 @@ public:
 
         msg = queue.front();
         queue.pop();
+        notEmpty.tryWait(); // Resynchroniser le sémaphore
         return true;
     }
 
     // Vérifier si la queue a des messages
     bool hasMessages() const
     {
+        LockGuard lock(queueMutex);
         return !queue.empty();
     }
 
     // Nombre de messages en attente
     size_t getMessageCount() const
     {
+        LockGuard lock(queueMutex);
         return queue.size();
     }
 
@@ -102,8 +107,8 @@ public:
 private:
     std::queue<Message> queue;
     size_t maxSize;
-    Mutex queueMutex;
-    Semaphore notEmpty{0}; // Initialisé à 0
+    mutable Mutex queueMutex; // mutable : verrouillable depuis les méthodes const
+    Semaphore notEmpty{0};    // Initialisé à 0
 };
 
 #endif

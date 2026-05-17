@@ -70,12 +70,11 @@ void Scheduler::updatePeriodicTasks()
 
     for (auto &task : allTasks)
     {
-        if (task->isPeriodic() && task->getState() == TaskState::READY)
+        if (task->isPeriodic() && task->getState() == TaskState::WAITING)
         {
-            // Vérifier si c'est l'heure de réexécuter la tâche périodique
             if (now >= task->getNextWakeup())
             {
-                // Remettre dans la queue pour exécution
+                task->setState(TaskState::READY);
                 readyQueue.push(task);
             }
         }
@@ -105,15 +104,14 @@ void Scheduler::runOnce()
 
     task->execute();
 
-    // Gestion de l'état après exécution
     if (task->isPeriodic())
     {
-
         task->updateNextWakeup();
-        task->setState(TaskState::READY);
+        task->setState(TaskState::WAITING);
     }
     else
     {
+        // Fix #6 : état TERMINATED (était incorrectement READY dans task.cpp).
         task->setState(TaskState::TERMINATED);
     }
 
@@ -122,7 +120,6 @@ void Scheduler::runOnce()
 
 bool Scheduler::hasReadyTasks() const
 {
-
     if (!readyQueue.empty() || !delayedTasks.empty())
     {
         return true;
@@ -131,8 +128,12 @@ bool Scheduler::hasReadyTasks() const
     auto now = std::chrono::steady_clock::now();
     for (const auto &task : allTasks)
     {
-        if (task->isPeriodic() && task->getState() == TaskState::READY)
+        if (task->isPeriodic() && task->getState() == TaskState::WAITING)
         {
+            if (now >= task->getNextWakeup())
+            {
+                return true;
+            }
             return true;
         }
     }

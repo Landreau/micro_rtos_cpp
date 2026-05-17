@@ -15,10 +15,8 @@ set(KERNEL_SOURCES
     kernel/rtos.cpp
 )
 
-# Lier les threads (pour std::mutex, std::condition_variable, etc.)
 find_package(Threads REQUIRED)
 
-# ============ EXÉCUTABLE 1: Tests Généraux ============
 add_executable(micro_rtos main.cpp ${KERNEL_SOURCES})
 target_link_libraries(micro_rtos Threads::Threads)
 
@@ -29,7 +27,6 @@ else()
     target_compile_options(micro_rtos PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
-# ============ EXÉCUTABLE 2: Démo Capteurs ============
 add_executable(sensor_demo main_sensor_demo.cpp ${KERNEL_SOURCES})
 target_link_libraries(sensor_demo Threads::Threads)
 

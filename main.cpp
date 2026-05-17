@@ -1,4 +1,4 @@
-#include "Kernel/rtos.h"
+#include "kernel/rtos.h"
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -10,7 +10,7 @@ int periodic_counter = 0;
 // Kernel global (pour delay)
 Kernel *globalKernel = nullptr;
 
-// ============ TÂCHES SIMPLES ============
+//  TÂCHES SIMPLES
 void task1_simple()
 {
     std::cout << "  [TASK 1] Exécution " << ++counter1 << std::endl;
@@ -26,13 +26,13 @@ void task3_simple()
     std::cout << "  [TASK 3] Exécution " << ++counter3 << std::endl;
 }
 
-// ============ TÂCHE PÉRIODIQUE ============
+//  TÂCHE PÉRIODIQUE
 void periodic_task()
 {
     std::cout << "  [PERIODIC] Exécution " << ++periodic_counter << std::endl;
 }
 
-// ============ TÂCHE AVEC DÉLAI ============
+//  TÂCHE AVEC DÉLAI
 void delayed_task()
 {
     std::cout << "  [DELAYED] Avant délai" << std::endl;
@@ -40,13 +40,12 @@ void delayed_task()
     std::cout << "  [DELAYED] Après délai" << std::endl;
 }
 
-// ============ TÂCHE AVEC MUTEX ============
+//  TÂCHE AVEC MUTEX
 int shared_value = 0;
 
 void task_with_mutex()
 {
     std::cout << "  [MUTEX TASK] Début critique" << std::endl;
-    // En vrai, on utiliserait LockGuard pour verrous automatiques
     globalKernel->getMutex().lock();
     {
         shared_value++;
@@ -56,7 +55,7 @@ void task_with_mutex()
     std::cout << "  [MUTEX TASK] Fin critique" << std::endl;
 }
 
-// ============ TÂCHE AVEC SÉMAPHORE ============
+//  TÂCHE AVEC SÉMAPHORE
 void task_with_semaphore()
 {
     std::cout << "  [SEMAPHORE] En attente du sémaphore..." << std::endl;
@@ -68,7 +67,7 @@ void task_with_semaphore()
     std::cout << "  [SEMAPHORE] Sémaphore libéré" << std::endl;
 }
 
-// ============ TÂCHE AVEC QUEUE DE MESSAGES ============
+//  TÂCHE AVEC QUEUE DE MESSAGES
 void producer_task()
 {
     std::cout << "  [PRODUCER] Envoi de message..." << std::endl;
@@ -119,7 +118,7 @@ int main()
     Kernel kernel;
     globalKernel = &kernel;
 
-    // ========== TEST 1: Tâches Simples ==========
+    //  TEST 1: Tâches Simples
     std::cout << "\n[TEST 1] Tâches simples avec priorité" << std::endl;
     std::cout << "═════════════════════════════════════════\n"
               << std::endl;
@@ -132,7 +131,7 @@ int main()
 
     std::cout << "Résultat: Task1=" << counter1 << ", Task2=" << counter2 << ", Task3=" << counter3 << std::endl;
 
-    // ========== TEST 2: Tâche Périodique ==========
+    //  TEST 2: Tâche Périodique
     std::cout << "\n[TEST 2] Tâche périodique" << std::endl;
     std::cout << "═════════════════════════════════════════\n"
               << std::endl;
@@ -145,7 +144,7 @@ int main()
 
     std::cout << "Tâche périodique exécutée " << periodic_counter << " fois" << std::endl;
 
-    // ========== TEST 3: Délai ==========
+    //  TEST 3: Délai
     std::cout << "\n[TEST 3] Délai (delay)" << std::endl;
     std::cout << "═════════════════════════════════════════\n"
               << std::endl;
@@ -156,7 +155,7 @@ int main()
     kernel3.createTask(delayed_task, 1);
     kernel3.run(5);
 
-    // ========== TEST 4: Mutex ==========
+    //  TEST 4: Mutex
     std::cout << "\n[TEST 4] Mutex (synchronisation)" << std::endl;
     std::cout << "═════════════════════════════════════════\n"
               << std::endl;
@@ -171,7 +170,7 @@ int main()
 
     std::cout << "Valeur finale partagée: " << shared_value << std::endl;
 
-    // ========== TEST 5: Sémaphore ==========
+    //  TEST 5: Sémaphore
     std::cout << "\n[TEST 5] Sémaphore (contrôle d'accès)" << std::endl;
     std::cout << "═════════════════════════════════════════\n"
               << std::endl;
@@ -183,7 +182,7 @@ int main()
     kernel5.createTask(task_with_semaphore, 1);
     kernel5.run(5);
 
-    // ========== TEST 6: Queue de Messages ==========
+    //  TEST 6: Queue de Messages
     std::cout << "\n[TEST 6] Queue de Messages (IPC)" << std::endl;
     std::cout << "═════════════════════════════════════════\n"
               << std::endl;

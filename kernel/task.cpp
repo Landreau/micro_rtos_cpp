@@ -56,15 +56,5 @@ void Task::execute()
     {
         state = TaskState::RUNNING;
         function();
-
-        if (isPeriodic())
-        {
-            updateNextWakeup();
-            state = TaskState::READY;
-        }
-        else
-        {
-            state = TaskState::READY;
-        }
     }
 }

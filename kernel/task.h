@@ -13,6 +13,7 @@ enum class TaskState
     RUNNING,
     BLOCKED,
     DELAYED,
+    WAITING, // Tâche périodique entre deux exécutions
     TERMINATED
 };
 

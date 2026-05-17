@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <ctime>
 
-// ============ CAPTEURS GLOBAUX ============
+// CAPTEURS GLOBAUX
 TemperatureSensor tempSensor(22.0f, 1.5f);
 HumiditySensor humiditySensor(55.0f);
 LightSensor lightSensor(300.0f);
@@ -18,7 +18,7 @@ uint32_t sensorReadCount = 0;
 uint32_t messagesSent = 0;
 uint32_t messagesReceived = 0;
 
-// ============ TÂCHE PRODUCTEUR: Capteur Température ============
+//  TÂCHE PRODUCTEUR: Capteur Température
 void temperature_sensor_task()
 {
     SensorData data = tempSensor.read(sensorReadCount++);
@@ -42,7 +42,7 @@ void temperature_sensor_task()
     }
 }
 
-// ============ TÂCHE PRODUCTEUR: Capteur Humidité ============
+//  TÂCHE PRODUCTEUR: Capteur Humidité
 void humidity_sensor_task()
 {
     SensorData data = humiditySensor.read(sensorReadCount++);
@@ -62,7 +62,7 @@ void humidity_sensor_task()
     }
 }
 
-// ============ TÂCHE PRODUCTEUR: Capteur Luminosité ============
+//  TÂCHE PRODUCTEUR: Capteur Luminosité
 void light_sensor_task()
 {
     SensorData data = lightSensor.read(sensorReadCount++);
@@ -82,16 +82,16 @@ void light_sensor_task()
     }
 }
 
-// ============ TÂCHE PRODUCTEUR: Capteur Mouvement ============
+//  TÂCHE PRODUCTEUR: Capteur Mouvement
 void motion_sensor_task()
 {
     SensorData data = motionSensor.read(sensorReadCount++);
 
     if (data.value > 0)
-    { // Seulement si mouvement détecté
+    {
         Message msg;
         msg.senderId = 4;      // Capteur mouvement
-        msg.recipientId = -1;  // Broadcast
+        msg.recipientId = -1;  // Diffusion
         msg.messageType = 103; // Type: mouvement
         msg.dataSize = sizeof(SensorData);
         std::memcpy(msg.data, &data, sizeof(SensorData));
@@ -99,12 +99,12 @@ void motion_sensor_task()
         if (globalKernel->getMessageQueue().send(msg))
         {
             messagesSent++;
-            std::cout << "  [MOTION SENSOR] ⚠️  MOUVEMENT DÉTECTÉ!" << std::endl;
+            std::cout << "  [MOTION SENSOR] !  MOUVEMENT DÉTECTÉ!" << std::endl;
         }
     }
 }
 
-// ============ TÂCHE CONSOMMATEUR: Logger ============
+//  TÂCHE CONSOMMATEUR: Logger
 void logger_task()
 {
     Message msg;
@@ -137,7 +137,7 @@ void logger_task()
     }
 }
 
-// ============ TÂCHE CONSOMMATEUR: Contrôleur ============
+//  TÂCHE CONSOMMATEUR: Contrôleur
 void controller_task()
 {
     Message msg;
@@ -146,21 +146,21 @@ void controller_task()
     {
         SensorData *data = reinterpret_cast<SensorData *>(msg.data);
 
-        // Exemple : Déclencher une alerte si température trop haute
+        // Déclencher une alerte si température trop haute
         if (data->type == SensorType::TEMPERATURE && data->value > 25.0f)
         {
             std::cout << "    [CONTRÔLEUR] 🌡️  ALERTE TEMPÉRATURE: " << std::fixed
                       << std::setprecision(2) << data->value << "°C" << std::endl;
         }
 
-        // Exemple : Alerte si humidité trop basse
+        // Alerte si humidité trop basse
         if (data->type == SensorType::HUMIDITY && data->value < 30.0f)
         {
             std::cout << "    [CONTRÔLEUR] 💧 ALERTE HUMIDITÉ: " << std::fixed
                       << std::setprecision(2) << data->value << "%" << std::endl;
         }
 
-        // Exemple : Mouvement détecté
+        // Mouvement détecté
         if (data->type == SensorType::MOTION && data->value > 0)
         {
             std::cout << "    [CONTRÔLEUR] 📹 Mouvement détecté - Activating alarm!" << std::endl;
@@ -168,13 +168,13 @@ void controller_task()
     }
 }
 
-// ============ TÂCHE MONITORING: Statistiques ============
+//  TÂCHE MONITORING: Statistiques
 static int stats_counter = 0;
 void stats_task()
 {
     stats_counter++;
     if (stats_counter % 5 == 0)
-    { // Afficher tous les 5 appels
+    {
         std::cout << "\n    ═══ STATISTIQUES ═══" << std::endl;
         std::cout << "    Messages envoyés: " << messagesSent << std::endl;
         std::cout << "    Messages reçus: " << messagesReceived << std::endl;
@@ -185,7 +185,6 @@ void stats_task()
     }
 }
 
-// ============ MAIN ============
 int main()
 {
     std::cout << "\n  ╔════════════════════════════════════════════╗" << std::endl;
@@ -214,7 +213,7 @@ int main()
     // Créer les tâches PRODUCTEURS (capteurs)
     std::cout << "[KERNEL] Création des capteurs...\n"
               << std::endl;
-    kernel.createPeriodicTask(temperature_sensor_task, 3, 100); // Haute priorité, 100ms
+    kernel.createPeriodicTask(temperature_sensor_task, 3, 100);
     kernel.createPeriodicTask(humidity_sensor_task, 3, 150);
     kernel.createPeriodicTask(light_sensor_task, 3, 200);
     kernel.createPeriodicTask(motion_sensor_task, 3, 50);
@@ -222,18 +221,17 @@ int main()
     // Créer les tâches CONSOMMATEURS
     std::cout << "[KERNEL] Création des consommateurs...\n"
               << std::endl;
-    kernel.createPeriodicTask(logger_task, 2, 100); // Priorité moyenne
+    kernel.createPeriodicTask(logger_task, 2, 100);
     kernel.createPeriodicTask(controller_task, 2, 100);
-    kernel.createPeriodicTask(stats_task, 1, 500); // Faible priorité
+    kernel.createPeriodicTask(stats_task, 1, 500);
 
     std::cout << "[KERNEL] Démarrage du système...\n"
               << std::endl;
     std::cout << "════════════════════════════════════════════\n"
               << std::endl;
 
-    // Lancer le kernel
-    // Avec une pause de 1ms entre les itérations (déjà dans le run())
-    kernel.run(200); // 200 itérations ~ 2-3 secondes
+    // Lancement le kernel
+    kernel.run(200);
 
     std::cout << "\n════════════════════════════════════════════" << std::endl;
     std::cout << "\nRESULTATS FINAUX:" << std::endl;

@@ -50,13 +50,13 @@ void Kernel::run(int maxIterations)
 {
     if (running)
     {
-        std::cout << "[KERNEL] ⚠️  Le kernel est déjà en cours d'exécution" << std::endl;
+        std::cout << "[KERNEL] ! Le kernel est déjà en cours d'exécution" << std::endl;
         return;
     }
 
     running = true;
-    std::cout << "[KERNEL] ▶️  Démarrage du scheduler..." << std::endl;
-    std::cout << "[KERNEL] ✓ Kernel EN COURS D'EXÉCUTION" << std::endl;
+    std::cout << "[KERNEL] >  Démarrage du scheduler..." << std::endl;
+    std::cout << "[KERNEL] v Kernel EN COURS D'EXÉCUTION" << std::endl;
 
     int iterations = 0;
 
@@ -74,9 +74,8 @@ void Kernel::run(int maxIterations)
     }
 
     running = false;
-    std::cout << "[KERNEL] ⏹️  Scheduler arrêté après " << iterations << " itérations" << std::endl;
-    std::cout << "[KERNEL] ✗ Kernel ARRÊTÉ" << std::endl;
-    running = false;
+    std::cout << "[KERNEL] x  Scheduler arrêté après " << iterations << " itérations" << std::endl;
+    std::cout << "[KERNEL] x Kernel ARRÊTÉ" << std::endl;
 }
 
 void Kernel::stop()
